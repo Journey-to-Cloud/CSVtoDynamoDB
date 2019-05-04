@@ -28,7 +28,7 @@ def scan_table(table_name,table,filter_key, filter_value,filter_value2, column_n
     else:
         response = table.scan()
 
-    write_to_csv(column_names,response['Items'])
+    io.write_to_csv(column_names,response['Items'],"data_from_db.csv")
 
 
 def query_table(table_name,table,filter_key, filter_value, column_names):
@@ -45,23 +45,4 @@ def query_table(table_name,table,filter_key, filter_value, column_names):
     """
     filtering_exp = Key(filter_key).eq(filter_value)
     response = table.query(KeyConditionExpression=filtering_exp)
-    write_to_csv(column_names,response['Items'])
-
-def write_to_csv(column_names, response):
-    """
-    Converts the query/scan outputs to CSV
-
-    Args:
-        column_names: This is the list of the headers in the csv
-        response: This is the response from the query/scan operations
-    """
-    csv_file = "output.csv"
-    try:
-        with open(csv_file, 'w') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=column_names)
-            writer.writeheader()
-            for data in response:
-                writer.writerow(data)
-    except IOError:
-        io.console_output("I/O error") 
-    return csv_file
+    io.write_to_csv(column_names,response['Items'],"data_from_db.csv")
