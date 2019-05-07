@@ -40,6 +40,8 @@ def write_to_csv(column_names, response, filename):
             writer.writeheader()
             for data in response:
                 writer.writerow(data)
-    except IOError:
-        console_output("I/O error") 
-    return csv_file
+            return csv_file
+    except Exception as e:
+        console_output("The program had to terminate because of the following error in write_to_csv: "+str(e))
+        exit(1)
+    

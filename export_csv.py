@@ -34,38 +34,49 @@ def read_csv(csv_file_name):
     Args:
         csv_file_name: The name of the CSV file
     """
-    with open(csv_file_name, newline='') as csv_file:
-        reader = csv.reader(csv_file)
-        for row in reader:
-            column_names = row
-            break
-        
-        # Adding the additional columns to reflect the status of each insert
-        output_column_names = []
-        output_column_names = list(column_names)
-        output_column_names.append('Success/Failure')
-        output_column_names.append('Error Code')
-        output_column_names.append('Error Description')
-        item_collection = []
-        
-        for row in reader:
-            
-            item = {}
-            for column in range (0, len(column_names)):
-                """print("Column: "+str(column))
-                print("Column Name: " + column_names[column])
-                print("Row: "+row[column])
-                item[column_names[column]] = row[column]
-                print(item[column_names[column]])"""
-                if column_names[column] == 'Time':
-                    item[column_names[column]] = datetime.strptime(row[column], "%d/%m/%y %H:%M").isoformat()
+    try:
+        with open(csv_file_name, newline='') as csv_file:
+            reader = csv.reader(csv_file)
+            for row in reader:
+                temp_column_names = row
+                break
+            column_names = []
+            for each in temp_column_names:
+                if not each:
+                    continue
                 else:
-                    item[column_names[column]] = row[column]
-            item_collection.append(item)
-        csv_file.close()
-        
-        return_values = [column_names,item_collection,output_column_names]
-        return return_values
+                    column_names.append(each)
+            
+            # Adding the additional columns to reflect the status of each insert
+            output_column_names = []
+            output_column_names = list(column_names)
+            output_column_names.append('Success/Failure')
+            output_column_names.append('Error Code')
+            output_column_names.append('Error Description')
+            item_collection = []
+            
+            for row in reader:
+                
+                item = {}
+                for column in range (0, len(column_names)):
+                    if column_names[column] == 'Time' or column_names[column] == 'time':
+                        try:
+                            date_time_value = datetime.strptime(row[column], "%d-%m-%y %H:%M").strftime("%d/%m/%y %H:%M")
+                            item[column_names[column]] = datetime.strptime(date_time_value, "%d/%m/%y %H:%M").isoformat()
+                        except ValueError:
+                            item[column_names[column]] = datetime.strptime(row[column], "%d/%m/%y %H:%M").isoformat()
+                        except Exception as e:
+                            io.console_output("The program had to terminate because of the following error in read_csv: "+str(e))
+                            exit(1)
+                    else:
+                        item[column_names[column]] = row[column]
+                item_collection.append(item)
+            csv_file.close()
+            
+            return_values = [column_names,item_collection,output_column_names]
+            return return_values
+    except Exception as e:
+        io.console_output("The program had to terminate because of the following error in read_csv: "+str(e))
 
 def prep_write(table, item_collection, partition_key_col_name,sort_key_col_name):
     """
@@ -76,25 +87,28 @@ def prep_write(table, item_collection, partition_key_col_name,sort_key_col_name)
         table: This is the boto3 DynamoDB resource which refers to the table
         item_collecti
     """
-    items_length = len(item_collection)
-    item_set_1 = math.ceil(items_length/3)
-    item_set_2 = item_set_1
-    item_set_3 = items_length - (item_set_1 + item_set_2)
-    item_collection_1 = item_collection[:item_set_1]
-    item_collection_2 = item_collection[item_set_1:item_set_3]
-    item_collection_3 = item_collection[item_set_3:]
-    thread_1 = ThreadWithReturnValue(target=batch_write, args=(table,item_collection_1, partition_key_col_name,sort_key_col_name,"thread-1"))
-    thread_2 = ThreadWithReturnValue(target=batch_write, args=(table,item_collection_2, partition_key_col_name,sort_key_col_name,"thread-2"))
-    thread_3 = ThreadWithReturnValue(target=batch_write, args=(table,item_collection_3, partition_key_col_name,sort_key_col_name,"thread-3"))
-    io.console_output('Beginning csv to dynamoDB import using\n')
-    thread_1.start()
-    thread_2.start()
-    thread_3.start()
-    result_thread_1 = thread_1.join()
-    result_thread_2 = thread_2.join()
-    result_thread_3 = thread_3.join()
-
-    return(result_thread_1+","+result_thread_2+","+result_thread_3)
+    try:
+        items_length = len(item_collection)
+        item_set_1 = math.ceil(items_length/3)
+        item_set_2 = item_set_1
+        item_set_3 = items_length - (item_set_1 + item_set_2)
+        item_collection_1 = item_collection[:item_set_1]
+        item_collection_2 = item_collection[item_set_1:item_set_3]
+        item_collection_3 = item_collection[item_set_3:]
+        thread_1 = ThreadWithReturnValue(target=batch_write, args=(table,item_collection_1, partition_key_col_name,sort_key_col_name,"thread-1"))
+        thread_2 = ThreadWithReturnValue(target=batch_write, args=(table,item_collection_2, partition_key_col_name,sort_key_col_name,"thread-2"))
+        thread_3 = ThreadWithReturnValue(target=batch_write, args=(table,item_collection_3, partition_key_col_name,sort_key_col_name,"thread-3"))
+        io.console_output('Beginning csv to dynamoDB import\n')
+        thread_1.start()
+        thread_2.start()
+        thread_3.start()
+        result_thread_1 = thread_1.join()
+        result_thread_2 = thread_2.join()
+        result_thread_3 = thread_3.join()
+        return(result_thread_1+","+result_thread_2+","+result_thread_3)
+    except Exception as e:
+        io.console_output("The program had to terminate because of the following error in prep_write: "+str(e))
+        exit(1)
 
 def batch_write(table, item_collection, partition_key_col_name,sort_key_col_name,thread_name):
     """
