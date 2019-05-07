@@ -1,4 +1,4 @@
-Mac ID,Customer,DeviceName,Model,Firmware,SPO2,BVP,LoggedUser,OperatorName,Time,Success/Failure,Error Code,Error Description
+id,customer,devicename,model,firmware,spo2,bvp,loggeduser,operatorname,time,Success/Failure,Error Code,Error Description
 087cbe92dcbb,ChoiceMMed,iFeelC,C228,1.1.2,yes,no,choicemmed,zhou,2019-04-16T02:22:00,"No Error in : thread-1,No Error in : thread-2,No Error in : thread-3",0,
 087cbe84e697,ChoiceMMed,iFeelC,C228,1.1.2,yes,no,choicemmed,zhou,2019-04-16T02:24:00,"No Error in : thread-1,No Error in : thread-2,No Error in : thread-3",0,
 087cbe92dd2a,ChoiceMMed,iFeelC,C228,1.1.2,yes,no,choicemmed,zhou,2019-04-16T02:22:00,"No Error in : thread-1,No Error in : thread-2,No Error in : thread-3",0,

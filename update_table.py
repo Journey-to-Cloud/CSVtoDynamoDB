@@ -14,12 +14,26 @@ def reduce_capacity(table_name):
     Args:
         table_name: The name of the table
     """
-    client = boto3.client('dynamodb')
-    response = client.update_table(
-        ProvisionedThroughput={
-            'ReadCapacityUnits': 5,
-            'WriteCapacityUnits': 5,
-        },
-        TableName=table_name,
-    )
-    return response
+    try:
+
+        client = boto3.client('dynamodb')
+        response = client.describe_table(
+                TableName=table_name
+                )
+        provisioned_read_capacity = response['Table']['ProvisionedThroughput']['ReadCapacityUnits']
+        provisioned_write_capacity = response['Table']['ProvisionedThroughput']['WriteCapacityUnits']
+        if provisioned_read_capacity != 5 and provisioned_write_capacity != 5:
+            response = client.update_table(
+                ProvisionedThroughput={
+                    'ReadCapacityUnits': 5,
+                    'WriteCapacityUnits': 5,
+                },
+                TableName=table_name,
+            )
+            return "Successfully reduced capacity to 5 units"
+        else:
+            return "Provisioned Capacity already at 5 units"
+    except Exception as e:
+        return str(e)
+
+
