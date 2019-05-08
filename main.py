@@ -69,6 +69,8 @@ def read(dynamodb_resource):
         sort_key_col_name: This is the name of the sort key (range key)
     """
     try:
+        sort_key_col_name = ""
+        partition_key_col_name = ""
         client = boto3.client('dynamodb')
         table_name = io.user_input("Please enter the table name: ")
         table = dynamodb_resource.Table(table_name)
@@ -81,9 +83,11 @@ def read(dynamodb_resource):
                 partition_key_col_name = each_key['AttributeName']
             elif each_key['KeyType'] == 'RANGE':
                 sort_key_col_name = each_key['AttributeName']
-        
-        io.console_output("Please select one of the option: \n1) Search based on unique id\n2) Search based on a time range (eg: 16/4/19 2:22)\n3) quit program")
-        user_choice = io.user_input("Your Selection (1/2/3): ")
+        if sort_key_col_name == "":
+            io.console_output("Please select one of the option: \n1) Search based on unique id\n3) quit program")
+        elif sort_key_col_name != "" and partition_key_col_name != "":
+            io.console_output("Please select one of the option: \n1) Search based on unique id\n2) Search based on a time range (eg: 16/4/19 2:22)\n3) quit program")
+        user_choice = io.user_input("Your Selection: ")
         if user_choice == "1":
             unique_id = io.user_input("Please enter the unique id: ")
             import_csv.query_table(table_name,table,partition_key_col_name, unique_id)
