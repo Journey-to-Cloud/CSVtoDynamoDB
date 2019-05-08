@@ -46,9 +46,10 @@ def write(dynamodb_resource):
             io.console_output("The table name already exists. Do you want to:\n1) Continue writing to the table\n2) Quit Writing")
             user_choice = io.user_input("Your Selection (1/2): ")
             if user_choice == "1":
-                result = export_csv.prep_write(table, item_collection, partition_key_col_name,sort_key_col_name)
+                result = export_csv.prep_write(table, item_collection, partition_key_col_name, sort_key_col_name)
                 output = export_csv.validate(table, table_name, item_collection, partition_key_col_name, sort_key_col_name, result)
-                update_table.reduce_capacity(table_name)
+                response = update_table.reduce_capacity(table_name)
+                io.console_output("Database provisioned capacity update status: "+ response)
                 io.write_to_csv(output_column_names,output,"write_status.csv")
             elif user_choice == "2":
                 io.console_output("Back to menu")

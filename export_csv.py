@@ -147,10 +147,10 @@ def validate(table, table_name, item_collection, partition_key_col_name, sort_ke
     io.console_output('Beginning data validation...')
     out_rows = []
     for row in item_collection:
-        key = {partition_key_col_name: row[partition_key_col_name], sort_key_col_name: row[sort_key_col_name]}
+        key = {partition_key_col_name: row[partition_key_col_name]}
         out_row = copy(row)
         try:
-            response = table.get_item(Key=key)
+            response = table.get_item(Key=key,ConsistentRead=True)
             assert('Item' in response)
             out_row['Success/Failure'] = result
             out_row['Error Code'] = "0"
